@@ -1,5 +1,5 @@
 /* Track Daily service worker: makes the app load offline. Bump CACHE when shipping changes. */
-const CACHE = 'track-daily-v10';
+const CACHE = 'track-daily-v11';
 const SHELL = ['./', 'index.html', 'core.js', 'config.js', 'manifest.webmanifest', 'icon.svg', 'vendor/chart.umd.js'];
 
 self.addEventListener('install', event => {

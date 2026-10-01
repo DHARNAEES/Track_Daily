@@ -561,7 +561,7 @@
       </button>
       <button id="btnCloud" class="hidden w-full flex items-center gap-3 px-4 py-3.5 text-[14px] font-medium" style="border-bottom:1px solid var(--border);">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
-        Cloud backup (optional)
+        Account &amp; sync
       </button>
       <button id="btnResetMore" class="w-full flex items-center gap-3 px-4 py-3.5 text-[14px] font-medium" style="color:var(--neg);">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
@@ -875,27 +875,39 @@
   <div class="modal-backdrop absolute inset-0 bg-black/55" id="cloudModalBackdrop"></div>
   <div class="sheet-panel sm:modal-panel relative w-full sm:max-w-[400px] card rounded-t-3xl sm:rounded-2xl overflow-hidden">
     <div class="px-5 pt-5 pb-3 flex items-center justify-between" style="border-bottom:1px solid var(--border);">
-      <h3 class="font-display font-bold text-[17px]">Cloud backup</h3>
+      <h3 class="font-display font-bold text-[17px]">Account &amp; sync</h3>
       <button id="closeCloudModal" aria-label="Close" class="p-1.5 rounded-lg btn-ghost">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <div class="px-5 py-4 flex flex-col gap-3">
       <p class="text-[12.5px]" id="cloudStatus" style="color:var(--text-dim);">Not signed in.</p>
-      <div id="cloudAuthForm" class="flex flex-col gap-3">
-        <input id="cloudEmail" type="email" autocomplete="email" placeholder="Email" class="input-field rounded-xl px-3.5 py-2.5 text-[14px] w-full">
-        <input id="cloudPassword" type="password" autocomplete="current-password" placeholder="Password (min 6 characters)" class="input-field rounded-xl px-3.5 py-2.5 text-[14px] w-full">
-        <div class="flex items-center gap-2.5">
-          <button type="button" id="btnCloudSignUp" class="btn-ghost rounded-xl px-4 py-2.5 text-[13.5px] font-semibold flex-1">Create account</button>
-          <button type="button" id="btnCloudSignIn" class="btn-primary rounded-xl px-4 py-2.5 text-[13.5px] flex-1">Sign in</button>
-        </div>
-      </div>
-      <div id="cloudActions" class="hidden flex-col gap-2.5">
-        <button type="button" id="btnCloudUpload" class="btn-primary rounded-xl px-4 py-2.5 text-[13.5px]">Upload backup to cloud</button>
-        <button type="button" id="btnCloudDownload" class="btn-ghost rounded-xl px-4 py-2.5 text-[13.5px] font-semibold">Restore from cloud</button>
+      <p class="text-[12px]" style="color:var(--text-faint);">Your data saves to your account automatically and loads on every device you sign in on.</p>
+      <div class="flex flex-col gap-2.5">
+        <button type="button" id="btnCloudSync" class="btn-primary rounded-xl px-4 py-2.5 text-[13.5px]">Sync now</button>
         <button type="button" id="btnCloudSignOut" class="text-[13px] font-semibold py-1.5" style="color:var(--text-dim);">Sign out</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ===================== LOGIN SCREEN ===================== -->
+<div id="authGate" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 overflow-y-auto" style="background:var(--bg);">
+  <div class="w-full max-w-[380px] card rounded-2xl p-6 flex flex-col gap-4">
+    <div class="flex items-center gap-3">
+      <img src="icon.svg" alt="" width="44" height="44" class="rounded-[12px]">
+      <div>
+        <h1 class="font-display font-bold text-[20px] leading-tight">Track Daily</h1>
+        <p class="text-[12.5px]" style="color:var(--text-dim);">Sign in to sync your money across devices</p>
+      </div>
+    </div>
+    <form id="authForm" class="flex flex-col gap-3" novalidate>
+      <input id="authEmail" type="email" autocomplete="email" placeholder="Email" class="input-field rounded-xl px-3.5 py-2.5 text-[14px] w-full">
+      <input id="authPassword" type="password" autocomplete="current-password" placeholder="Password (min 6 characters)" class="input-field rounded-xl px-3.5 py-2.5 text-[14px] w-full">
+      <p id="authMsg" class="text-[12.5px] min-h-[18px]" role="alert"></p>
+      <button type="submit" id="btnAuthSignIn" class="btn-primary rounded-xl px-4 py-2.5 text-[13.5px]">Sign in</button>
+      <button type="button" id="btnAuthSignUp" class="btn-ghost rounded-xl px-4 py-2.5 text-[13.5px] font-semibold">Create account</button>
+    </form>
   </div>
 </div>
 <div id="toastContainer" class="fixed left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none w-full px-4" style="bottom:24px;"></div>
@@ -915,6 +927,7 @@
   const BUDGET_KEY = 'vantage_budgets_v1';
   const CUSTOM_CAT_KEY = 'vantage_custom_categories_v1';
   const META_KEY = 'vantage_meta_v1';
+  const DATA_KEYS = [TX_KEY, ACC_KEY, REC_KEY, BUDGET_KEY, CUSTOM_CAT_KEY];
 
   /* ============ ICONS ============ */
   const ICONS = {
@@ -1089,7 +1102,7 @@
   };
   let storageWarned = false;
   function persist(key, value){
-    if (store.set(key, JSON.stringify(value))) return;
+    if (store.set(key, JSON.stringify(value))){ if (DATA_KEYS.includes(key)) markDirty(); return; }
     if (!storageWarned){ storageWarned = true; toast('Could not save — browser storage is full or blocked','error'); }
   }
   function loadValue(key, fallback, valid){
@@ -1114,6 +1127,7 @@
       state.transactions = state.transactions.filter(t => t.date > '2026-09-30'); saveTx();
       meta.clearedThru20260930 = true; saveMeta();
     }
+    metaReady = true;
   }
   function saveTx(){ persist(TX_KEY, state.transactions); }
   function saveAccounts(){ persist(ACC_KEY, state.accounts); }
@@ -1144,6 +1158,7 @@
     ];
   }
   function seedRecurring(){
+    return [];
     return [
       { id: uid(), description:'Netflix subscription', amount:499, type:'expense', category:'subscriptions', nextDate: todayISO(), frequency:'monthly' },
       { id: uid(), description:'Monthly salary', amount:65000, type:'income', category:'salary', nextDate: todayISO(), frequency:'monthly' },
@@ -2080,55 +2095,159 @@
     if (!sbClient){ const lib = await loadSupabaseLib(); sbClient = lib.createClient(CLOUD_CFG.supabaseUrl, CLOUD_CFG.supabaseAnonKey); }
     return sbClient;
   }
-  async function cloudRefresh(){
+  let cloudSession = null, syncing = false, resyncQueued = false, applyingRemote = false;
+  let metaReady = false, dirtyVer = 0, syncTimer = null, syncFailedShown = false, syncStatus = '';
+
+  function markDirty(){
+    if (!cloudEnabled || applyingRemote || !metaReady) return;
+    dirtyVer++; meta.dirty = true; saveMeta(); scheduleSync();
+  }
+  function scheduleSync(delay){
+    clearTimeout(syncTimer);
+    if (cloudSession) syncTimer = setTimeout(syncNow, delay==null ? 1500 : delay);
+  }
+  function renderCloudStatus(){
+    $('#cloudStatus').textContent = cloudSession ? 'Signed in as '+cloudSession.user.email+(syncStatus ? ' · '+syncStatus : '') : 'Not signed in.';
+  }
+  function setSyncStatus(t){ syncStatus = t; renderCloudStatus(); }
+
+  const unionById = (a, b) => { const seen = new Set(a.map(x=>x.id)); return a.concat(b.filter(x=>!seen.has(x.id))); };
+  function mergeBackups(local, remote){
+    return { app:'track-daily', version:1, exportedAt:new Date().toISOString(),
+      transactions: unionById(remote.transactions||[], local.transactions||[]),
+      accounts: unionById(remote.accounts||[], local.accounts||[]),
+      recurring: unionById(remote.recurring||[], local.recurring||[]),
+      budgets: Object.assign({}, remote.budgets||{}, local.budgets||{}),
+      customCategories: unionById(remote.customCategories||[], local.customCategories||[]) };
+  }
+  function localHasData(){ return state.transactions.length>0 || state.accounts.length>0 || state.recurring.length>0; }
+  function rerenderAll(){ renderOverview(); refreshAfterTxChange(); renderWealth(); renderRecurringBanner(); }
+  function applyRemote(b){
+    applyingRemote = true;
     try {
-      const { data:{ session } } = await (await cloud()).auth.getSession();
-      $('#cloudAuthForm').classList.toggle('hidden', !!session);
-      $('#cloudActions').classList.toggle('hidden', !session); $('#cloudActions').classList.toggle('flex', !!session);
-      $('#cloudStatus').textContent = session ? 'Signed in as '+session.user.email+'.' : 'Sign in to back up to your own private cloud copy.';
-      return session;
-    } catch(err){ $('#cloudStatus').textContent = err.message; return null; }
+      state.transactions = b.transactions||[]; state.accounts = b.accounts||[]; state.recurring = b.recurring||[];
+      state.budgets = b.budgets||{}; customCategories = b.customCategories||[];
+      saveTx(); saveAccounts(); saveRecurring(); saveBudgets(); saveCustomCategories();
+    } finally { applyingRemote = false; }
+    rerenderAll();
+  }
+  function clearLocalData(){
+    applyRemote({});
+    delete meta.syncUser; delete meta.syncedAt; meta.dirty = false; saveMeta();
+  }
+  async function uploadBackup(sb, uid, b){
+    const { data, error } = await sb.from('track_daily_backups')
+      .upsert({ user_id: uid, data: b, updated_at: new Date().toISOString() }).select('updated_at').single();
+    if (error) throw error;
+    meta.syncedAt = data.updated_at;
+  }
+  async function syncNow(){
+    if (!cloudSession) return;
+    if (syncing){ resyncQueued = true; return; }
+    syncing = true; setSyncStatus('syncing…');
+    const uid = cloudSession.user.id;
+    try {
+      const sb = await cloud();
+      const { data:row, error } = await sb.from('track_daily_backups').select('data,updated_at').eq('user_id', uid).maybeSingle();
+      if (error) throw error;
+      if (row && !TD.validateBackup(row.data)) throw new Error('The cloud copy could not be read');
+      if (meta.syncUser && meta.syncUser !== uid) clearLocalData();
+      const startVer = dirtyVer;
+      if (meta.syncUser !== uid){
+        if (!row){ await uploadBackup(sb, uid, buildBackup()); }
+        else if (!localHasData()){ applyRemote(row.data); meta.syncedAt = row.updated_at; }
+        else { const merged = mergeBackups(buildBackup(), row.data); applyRemote(merged); await uploadBackup(sb, uid, merged); }
+        meta.syncUser = uid;
+      } else if (row && Date.parse(row.updated_at) !== Date.parse(meta.syncedAt || 0)){
+        if (meta.dirty){ const merged = mergeBackups(buildBackup(), row.data); applyRemote(merged); await uploadBackup(sb, uid, merged); }
+        else { applyRemote(row.data); meta.syncedAt = row.updated_at; }
+      } else if (meta.dirty || !row){
+        await uploadBackup(sb, uid, buildBackup());
+      }
+      if (dirtyVer === startVer) meta.dirty = false; else resyncQueued = true;
+      saveMeta();
+      syncFailedShown = false;
+      setSyncStatus('synced '+new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }));
+    } catch(err){
+      setSyncStatus('sync failed');
+      if (!syncFailedShown){ syncFailedShown = true; toast('Could not sync — will retry','error'); }
+      scheduleSync(30000);
+    } finally {
+      syncing = false;
+      if (resyncQueued){ resyncQueued = false; scheduleSync(300); }
+    }
+  }
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function showGate(show){ const g = $('#authGate'); g.classList.toggle('hidden', !show); g.classList.toggle('flex', show); }
+  function setAuthMsg(text, neutral){ const m = $('#authMsg'); m.textContent = text || ''; m.style.color = neutral ? 'var(--text-dim)' : 'var(--neg)'; }
+  function enterApp(session){
+    cloudSession = session; showGate(false); renderCloudStatus(); syncNow();
   }
   async function cloudAuth(mode){
-    const email = $('#cloudEmail').value.trim(), password = $('#cloudPassword').value;
-    if (!email || password.length<6){ toast('Enter an email and a password of at least 6 characters','error'); return; }
+    const email = $('#authEmail').value.trim(), password = $('#authPassword').value;
+    if (!email || password.length<6){ setAuthMsg('Enter an email and a password of at least 6 characters'); return; }
+    const btns = [$('#btnAuthSignIn'), $('#btnAuthSignUp')];
+    btns.forEach(b=>b.disabled = true);
+    setAuthMsg('Please wait…', true);
     try {
       const sb = await cloud();
       const { data, error } = mode==='up' ? await sb.auth.signUp({ email, password }) : await sb.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      if (mode==='up' && !data.session){ toast('Check your email to confirm your account, then sign in','default'); return; }
-      $('#cloudPassword').value='';
-      await cloudRefresh();
-    } catch(err){ toast(err.message || 'Sign-in failed','error'); }
+      if (!data.session){ setAuthMsg('Account created. Check your email to confirm it, then sign in.', true); return; }
+      $('#authPassword').value = ''; setAuthMsg('');
+      enterApp(data.session);
+    } catch(err){ setAuthMsg(err.message || 'Sign-in failed'); }
+    finally { btns.forEach(b=>b.disabled = false); }
   }
-  $('#btnCloud').addEventListener('click', async ()=>{ showModal('#cloudModal'); await cloudRefresh(); });
+  async function startAuth(){
+    showGate(true); setAuthMsg('Checking sign-in…', true);
+    try {
+      const sb = await cloud();
+      const { data:{ session } } = await sb.auth.getSession();
+      sb.auth.onAuthStateChange((ev, s)=>{
+        if (s){ cloudSession = s; }
+        else if (ev==='SIGNED_OUT' && cloudSession){ cloudSession = null; showGate(true); setAuthMsg('Please sign in again.', true); }
+      });
+      if (session){ setAuthMsg(''); enterApp(session); }
+      else if (!navigator.onLine && meta.syncUser){ showGate(false); renderCloudStatus(); }
+      else setAuthMsg('');
+    } catch(err){
+      if (meta.syncUser) showGate(false); else setAuthMsg(err.message || 'Could not reach the sign-in service');
+    }
+  }
+  async function resumeSync(){
+    if (!cloudEnabled || !metaReady) return;
+    if (cloudSession){ syncNow(); return; }
+    if ($('#authGate').classList.contains('hidden')){
+      try { const { data:{ session } } = await (await cloud()).auth.getSession(); if (session) enterApp(session); } catch(e){}
+    }
+  }
+  document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) resumeSync(); });
+  window.addEventListener('online', resumeSync);
+
+  $('#authForm').addEventListener('submit', e=>{ e.preventDefault(); cloudAuth('in'); });
+  $('#btnAuthSignUp').addEventListener('click', ()=>cloudAuth('up'));
+  $('#btnCloud').addEventListener('click', ()=>{ renderCloudStatus(); showModal('#cloudModal'); });
   $('#closeCloudModal').addEventListener('click', ()=>hideModal('#cloudModal'));
   $('#cloudModalBackdrop').addEventListener('click', ()=>hideModal('#cloudModal'));
-  $('#btnCloudSignIn').addEventListener('click', ()=>cloudAuth('in'));
-  $('#btnCloudSignUp').addEventListener('click', ()=>cloudAuth('up'));
-  $('#btnCloudSignOut').addEventListener('click', async ()=>{ try { await (await cloud()).auth.signOut(); } catch(e){} await cloudRefresh(); });
-  $('#btnCloudUpload').addEventListener('click', async ()=>{
-    try {
-      const sb = await cloud();
-      const { data:{ session } } = await sb.auth.getSession();
-      if (!session){ await cloudRefresh(); return; }
-      const { error } = await sb.from('track_daily_backups').upsert({ user_id: session.user.id, data: buildBackup(), updated_at: new Date().toISOString() });
-      if (error) throw error;
-      markBackup();
-      toast('Backup uploaded','success');
-    } catch(err){ toast(err.message || 'Upload failed','error'); }
+  $('#btnCloudSync').addEventListener('click', async ()=>{
+    if (!cloudSession){ toast('Sign in first','error'); return; }
+    clearTimeout(syncTimer); await syncNow();
+    toast(syncStatus==='sync failed' ? 'Could not sync' : 'Synced', syncStatus==='sync failed' ? 'error' : 'success');
   });
-  $('#btnCloudDownload').addEventListener('click', async ()=>{
-    try {
-      const sb = await cloud();
-      const { data:{ session } } = await sb.auth.getSession();
-      if (!session){ await cloudRefresh(); return; }
-      const { data, error } = await sb.from('track_daily_backups').select('data').eq('user_id', session.user.id).maybeSingle();
-      if (error) throw error;
-      if (!data){ toast('No cloud backup found yet','error'); return; }
-      hideModal('#cloudModal');
-      askRestore(data.data, 'The cloud backup');
-    } catch(err){ toast(err.message || 'Download failed','error'); }
+  $('#btnCloudSignOut').addEventListener('click', async ()=>{
+    clearTimeout(syncTimer);
+    if (cloudSession){
+      await syncNow();
+      for (let i=0; i<25 && syncing; i++) await sleep(200);
+      if (meta.dirty && !confirm('Some changes are not synced yet and will be lost if you sign out. Sign out anyway?')) return;
+    }
+    try { await (await cloud()).auth.signOut(); } catch(e){}
+    cloudSession = null; syncStatus = '';
+    clearLocalData();
+    hideModal('#cloudModal');
+    showGate(true); setAuthMsg('Signed out.', true);
   });
   if (cloudEnabled) $('#btnCloud').classList.remove('hidden');
 
@@ -2262,6 +2381,7 @@
     renderGreeting();
     goToPage('overview');
     renderBackupUI();
+    if (cloudEnabled) startAuth();
     document.addEventListener('keydown', e=>{
       if (e.key==='Escape'){
         ['#txModal','#categoryModal','#manageCategoriesModal','#accountModal','#recurringModal','#filterModal','#confirmModal','#cloudModal'].forEach(hideModal);
