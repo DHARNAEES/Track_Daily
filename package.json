@@ -1,0 +1,9 @@
+{
+  "name": "track-daily",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Track Daily — offline-first personal finance tracker",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  }
+}

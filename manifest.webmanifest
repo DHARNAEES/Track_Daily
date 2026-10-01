@@ -1,0 +1,14 @@
+{
+  "name": "Track Daily",
+  "short_name": "Track Daily",
+  "description": "Offline-first personal finance tracker: expenses, budgets and recurring entries.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F5F3EE",
+  "theme_color": "#1F6B4A",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

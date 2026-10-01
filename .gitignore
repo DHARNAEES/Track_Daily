@@ -8,3 +8,6 @@ Thumbs.db
 
 # Netlify CLI local state (only relevant if you ever use `netlify dev`/`netlify link`)
 .netlify/
+
+# Dependencies
+node_modules/
