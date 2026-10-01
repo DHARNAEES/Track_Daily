@@ -36,7 +36,7 @@
   })();
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="vendor/chart.umd.js"></script>
 
 <script>
   tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: {
@@ -196,6 +196,28 @@
   @keyframes pageIn{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:translateY(0);} }
 
   .page{ }
+
+  /* ---------- Desktop layout (>=1024px): sidebar + wide content ---------- */
+  #sidebar{ display:none; }
+  .side-nav-btn{ display:flex; align-items:center; gap:12px; width:100%; padding:11px 14px; border-radius:12px; font-size:14px; font-weight:500; color:var(--text-dim); text-align:left; transition:background-color .15s ease, color .15s ease; }
+  .side-nav-btn:hover{ background:var(--surface); color:var(--text); }
+  .side-nav-btn.active{ background:rgba(var(--accent-rgb),0.12); color:var(--accent); font-weight:600; }
+  @media (min-width: 1024px){
+    :root{ --sidebar-w: 252px; }
+    #sidebar{ display:flex; flex-direction:column; position:fixed; top:0; bottom:0; left:0; width:var(--sidebar-w); padding:24px 14px; background:var(--bg-elev); border-right:1px solid var(--border); z-index:40; overflow-y:auto; }
+    #app{ max-width:none !important; margin:0 !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; padding-left:var(--sidebar-w); min-height:100vh; }
+    #app > .page{ width:100%; max-width:1180px; margin-left:auto; margin-right:auto; padding:36px 40px 56px; }
+    #bottomNav, #fabWrap, #fabMenuBackdrop{ display:none !important; }
+    #page-money > div:first-child{ padding-left:0; padding-right:0; padding-top:0; position:static; }
+    .money-subpage{ padding-left:0 !important; padding-right:0 !important; }
+    #money-transactions:not(.hidden){ display:grid; grid-template-columns:minmax(0,1fr) 320px; column-gap:28px; align-items:start; }
+    #money-transactions > *{ grid-column:1; }
+    #money-transactions > #txSummaryAside{ grid-column:2; grid-row:1 / span 20; position:sticky; top:24px; }
+    #wealthAccountsList, #moneyAccountsList, #recurringList, #budgetRows{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+    #wealthAccountsList > :only-child, #moneyAccountsList > :only-child{ grid-column:1 / -1; }
+    #page-more > *{ max-width:680px; }
+    .toast-enter{ margin-left:var(--sidebar-w); }
+  }
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
   }
@@ -204,7 +226,49 @@
 
 <body class="antialiased">
 
-<div id="app" class="relative mx-auto max-w-[var(--app-max-width)] min-h-screen flex flex-col sm:my-5 sm:rounded-[28px] sm:shadow-2xl sm:border overflow-hidden" style="border-color:var(--border); transition: max-width .3s ease;">
+<!-- ===================== DESKTOP SIDEBAR (>=1024px) ===================== -->
+<aside id="sidebar" aria-label="Main navigation">
+  <div class="flex items-center gap-2.5 px-2 mb-7">
+    <img src="icon.svg" alt="" width="34" height="34" class="rounded-[10px]">
+    <span class="font-display font-bold text-[18px] tracking-tight">Track Daily</span>
+  </div>
+  <div class="flex flex-col gap-1">
+    <button data-page="overview" class="side-nav-btn active">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Overview
+    </button>
+    <button data-page="wealth" class="side-nav-btn">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      Wealth
+    </button>
+    <button data-page="money" class="side-nav-btn">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+      Money
+    </button>
+    <button data-page="more" class="side-nav-btn">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/><circle cx="5" cy="12" r="1.4"/></svg>
+      More
+    </button>
+  </div>
+  <div class="mt-6 flex flex-col gap-2">
+    <button id="btnSideAddExpense" class="btn-primary rounded-xl px-4 py-2.5 text-[13.5px] flex items-center justify-center gap-1.5">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add expense
+    </button>
+    <button id="btnSideAddIncome" class="btn-ghost rounded-xl px-4 py-2.5 text-[13.5px] font-semibold flex items-center justify-center gap-1.5">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add income
+    </button>
+  </div>
+  <div class="mt-auto">
+    <button id="btnThemeSide" class="side-nav-btn">
+      <svg id="themeIconSide" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      <span id="themeLabelSide">Dark mode</span>
+    </button>
+  </div>
+</aside>
+
+<div id="app" class="relative mx-auto max-w-[var(--app-max-width)] min-h-screen flex flex-col sm:border-x overflow-hidden" style="border-color:var(--border); transition: max-width .3s ease;">
 
   <!-- ===================== PAGE: OVERVIEW ===================== -->
   <section id="page-overview" class="page flex-1 overflow-y-auto pb-28 px-4 lg:px-8 pt-6">
@@ -214,12 +278,12 @@
         <p class="text-[12.5px] font-medium" style="color:var(--text-dim);" id="greetingDate">—</p>
         <h1 class="font-display text-[24px] font-bold tracking-tight" id="greetingText">Overview</h1>
       </div>
-      <button id="themeToggleBtn" aria-label="Toggle theme" class="p-2 rounded-full btn-ghost">
+      <button id="themeToggleBtn" aria-label="Toggle theme" class="p-2 rounded-full btn-ghost lg:hidden">
         <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
       </button>
     </div>
 
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
     <div class="col-span-2 rounded-2xl p-5 card lift-hover stagger-in" style="animation-delay:.05s;">
       <p class="text-[12.5px] font-medium" style="color:var(--text-dim);">Total balance</p>
       <p class="font-display text-[32px] font-extrabold tracking-tight mt-1 tabular" id="statBalance">₹0.00</p>
@@ -250,13 +314,27 @@
         <p class="text-[11px] font-semibold mt-1 flex items-center" id="expenseTrend" style="color:var(--text-faint);"></p>
       </div>
 
-    <div class="col-span-2 lg:col-span-4 rounded-2xl p-4 card flex items-center justify-between stagger-in" style="animation-delay:.15s;">
+    <div class="col-span-2 lg:col-span-1 rounded-2xl p-4 card flex items-center justify-between lg:flex-col lg:items-start lg:justify-start lg:gap-2 stagger-in" style="animation-delay:.15s;">
       <div>
         <p class="text-[12px] font-medium" style="color:var(--text-dim);">Net savings this month</p>
         <p class="font-display text-[18px] font-bold tracking-tight tabular" id="statNetSavings">₹0.00</p>
       </div>
       <span id="savingsTrendChip" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold surface"></span>
     </div>
+    </div>
+
+    <div class="hidden lg:grid grid-cols-5 gap-3 mb-4">
+      <div class="col-span-3 rounded-2xl card p-5">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="font-display font-semibold text-[15px]">Recent transactions</h3>
+          <button id="btnRecentViewAll" class="text-[12.5px] font-semibold" style="color:var(--accent);">View all</button>
+        </div>
+        <div id="recentTxList"></div>
+      </div>
+      <div class="col-span-2 rounded-2xl card p-5">
+        <h3 class="font-display font-semibold text-[15px] mb-1">Top spending this month</h3>
+        <div id="topCategoriesList" class="mt-2"></div>
+      </div>
     </div>
 
     <div id="backupReminder" class="hidden rounded-2xl p-3.5 surface mb-3 flex items-center justify-between gap-2">
@@ -359,6 +437,7 @@
           <p class="text-[13.5px]" style="color:var(--text-faint);" id="emptyTxText">No expenses recorded yet. Add your first entry above.</p>
         </div>
       </div>
+      <aside id="txSummaryAside" class="hidden lg:block"></aside>
     </div>
 
     <!-- ---- Money > Accounts ---- -->
@@ -422,7 +501,7 @@
       <div class="rounded-2xl p-4 card mb-4">
         <h3 class="font-display font-semibold text-[15px] mb-1">Spending by category</h3>
         <p class="text-[12px] mb-3" style="color:var(--text-faint);">This month's expenses</p>
-        <div class="relative h-[210px] flex items-center justify-center">
+        <div class="relative h-[210px] lg:h-[300px] flex items-center justify-center">
           <canvas id="categoryChart"></canvas>
           <div id="donutEmpty" class="absolute inset-0 hidden flex-col items-center justify-center text-center">
             <p class="text-[12.5px]" style="color:var(--text-faint);">No expenses this month yet</p>
@@ -433,7 +512,7 @@
       <div class="rounded-2xl p-4 card mb-4">
         <h3 class="font-display font-semibold text-[15px] mb-1">Monthly trend</h3>
         <p class="text-[12px] mb-3" style="color:var(--text-faint);">Last 6 months</p>
-        <div class="h-[210px]"><canvas id="trendChart"></canvas></div>
+        <div class="h-[210px] lg:h-[300px]"><canvas id="trendChart"></canvas></div>
       </div>
       </div>
     </div>
@@ -495,7 +574,7 @@
 
   <!-- ===================== FAB ===================== -->
   <div id="fabMenuBackdrop" class="hidden fixed inset-0 bg-black/25" style="z-index:44; opacity:0;"></div>
-  <div class="pointer-events-none" style="position:fixed; left:50%; transform:translateX(-50%); width:100%; max-width:var(--app-max-width); bottom:84px; z-index:45;">
+  <div id="fabWrap" class="pointer-events-none" style="position:fixed; left:50%; transform:translateX(-50%); width:100%; max-width:var(--app-max-width); bottom:84px; z-index:45;">
     <button id="fab" aria-label="Add" class="pointer-events-auto absolute btn-primary rounded-full w-14 h-14 flex items-center justify-center shadow-lg" style="right:16px;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
@@ -524,7 +603,7 @@
   </div>
 
   <!-- ===================== BOTTOM NAV ===================== -->
-  <nav class="grid grid-cols-4 card relative" style="position:fixed; left:50%; transform:translateX(-50%); width:100%; max-width:var(--app-max-width); bottom:0; z-index:40; border-left:none; border-right:none; border-bottom:none;">
+  <nav id="bottomNav" class="grid grid-cols-4 card relative" style="position:fixed; left:50%; transform:translateX(-50%); width:100%; max-width:var(--app-max-width); bottom:0; z-index:40; border-left:none; border-right:none; border-bottom:none;">
     <div id="navIndicator" class="absolute top-0 left-0 h-[2.5px] rounded-b-full" style="width:25%; background:var(--accent); transform:translateX(0%);"></div>
     <button data-page="overview" class="bottom-nav-btn active flex flex-col items-center gap-1 py-2.5">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
@@ -1071,6 +1150,8 @@
     $('#themeIcon').innerHTML = isLight ? sun : moon;
     $('#themeIconMore').innerHTML = isLight ? sun : moon;
     $('#themeLabelMore').textContent = isLight ? 'Dark mode' : 'Light mode';
+    $('#themeIconSide').innerHTML = isLight ? sun : moon;
+    $('#themeLabelSide').textContent = isLight ? 'Dark mode' : 'Light mode';
     [$('#themeIcon'), $('#themeIconMore')].forEach(el=>{
       el.classList.remove('theme-icon-spin');
       void el.offsetWidth;
@@ -1097,7 +1178,7 @@
     const target = $('#page-'+page);
     target.classList.remove('hidden');
     playPageTransition(target);
-    $$('.bottom-nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page===page));
+    $$('.bottom-nav-btn, .side-nav-btn[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page===page));
     const activeBtn = $('.bottom-nav-btn[data-page="'+page+'"]');
     if (activeBtn){
       const svg = activeBtn.querySelector('svg');
@@ -1130,7 +1211,7 @@
   }
   function renderChartsIfVisible(){ if (state.page==='money' && state.moneySubtab==='insights') renderCharts(); }
 
-  $$('.bottom-nav-btn').forEach(b => b.addEventListener('click', ()=> goToPage(b.dataset.page)));
+  $$('.bottom-nav-btn, .side-nav-btn[data-page]').forEach(b => b.addEventListener('click', ()=> goToPage(b.dataset.page)));
   $$('.money-subtab').forEach(b => b.addEventListener('click', ()=> goToMoneySubtab(b.dataset.subtab)));
   $('#goToInsights').addEventListener('click', ()=>{ goToPage('money'); goToMoneySubtab('insights'); });
 
@@ -1201,7 +1282,43 @@
     setInlineTrend('#incomeTrend', trendChip(pctChange(thisMonth.income, lastMonth.income), true));
     setInlineTrend('#expenseTrend', trendChip(pctChange(thisMonth.expense, lastMonth.expense), false));
     setChip('#savingsTrendChip', trendChip(pctChange(thisMonth.net, lastMonth.net), true));
+    renderOverviewPanels();
   }
+
+  /* ============ DESKTOP PANELS ============ */
+  function categoryBarsHtml(byCat, limit){
+    const ids = Object.keys(byCat).sort((a,b)=>byCat[b]-byCat[a]).slice(0,limit);
+    if (!ids.length) return '<p class="text-[13px] py-6 text-center" style="color:var(--text-faint);">No expenses this month yet.</p>';
+    const max = byCat[ids[0]];
+    return ids.map(id=>{
+      const meta = catMeta(id);
+      return '<div class="py-2"><div class="flex items-center justify-between text-[12.5px] mb-1.5"><span class="font-medium truncate">'+escapeHtml(meta.label)+'</span><span class="tabular" style="color:var(--text-dim);">'+fmtMoneyRound(byCat[id])+'</span></div>' +
+        '<div class="h-1.5 rounded-full overflow-hidden" style="background:var(--surface-hi);"><div class="h-full rounded-full" style="width:'+Math.max(4, byCat[id]/max*100)+'%;background:'+meta.color+';"></div></div></div>';
+    }).join('');
+  }
+  function renderOverviewPanels(){
+    const recent = state.transactions.slice().sort((a,b)=> b.date.localeCompare(a.date) || b.id.localeCompare(a.id)).slice(0,6);
+    $('#recentTxList').innerHTML = recent.length ? recent.map(t=>{
+      const meta = catMeta(t.category), inc = t.type==='income';
+      return '<div class="flex items-center gap-3 py-3" style="border-bottom:1px solid var(--border);">' +
+        '<span class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style="background:'+meta.color+';">'+iconSvg(meta.icon,16,'#fff')+'</span>' +
+        '<div class="min-w-0 flex-1"><p class="text-[13.5px] font-medium truncate">'+escapeHtml(t.description)+'</p><p class="text-[11.5px]" style="color:var(--text-faint);">'+escapeHtml(meta.label)+' · '+fmtDate(t.date)+'</p></div>' +
+        '<span class="font-display font-semibold text-[13.5px] tabular" style="color:'+(inc?'var(--pos)':'var(--neg)')+';">'+(inc?'+':'−')+fmtMoney(t.amount)+'</span></div>';
+    }).join('') : '<p class="text-[13px] py-6 text-center" style="color:var(--text-faint);">No transactions yet.</p>';
+    $('#topCategoriesList').innerHTML = categoryBarsHtml(TD.spentByCategory(state.transactions, currentMonthKey()), 5);
+  }
+  function renderTxSummary(){
+    const ym = currentTxMonthKey(), t = monthTotals(ym);
+    const row = (label, value, color) => '<div class="flex items-center justify-between py-2"><span class="text-[13px]" style="color:var(--text-dim);">'+label+'</span><span class="font-display font-semibold text-[14px] tabular" style="color:'+color+';">'+value+'</span></div>';
+    $('#txSummaryAside').innerHTML = '<div class="rounded-2xl card p-5">' +
+      '<p class="text-[11px] font-semibold" style="color:var(--text-faint); letter-spacing:.05em;">SUMMARY</p>' +
+      '<h3 class="font-display font-bold text-[16px] mb-2">'+(ym===currentMonthKey() ? 'This month' : monthLabelFor(ym))+'</h3>' +
+      row('Income', fmtMoney(t.income), 'var(--pos)') + row('Expenses', fmtMoney(t.expense), 'var(--neg)') +
+      '<div style="border-top:1px solid var(--border);margin-top:4px;">' + row('Net savings', fmtMoney(t.net), t.net>=0?'var(--pos)':'var(--neg)') + '</div>' +
+      '<p class="text-[11px] font-semibold mt-4 mb-1" style="color:var(--text-faint); letter-spacing:.05em;">TOP SPENDING</p>' +
+      categoryBarsHtml(TD.spentByCategory(state.transactions, ym), 4) + '</div>';
+  }
+  $('#btnRecentViewAll').addEventListener('click', ()=>{ goToPage('money'); goToMoneySubtab('transactions'); });
 
   /* ============ ACCOUNTS / WEALTH ============ */
   function accountTypeLabel(t){ return {cash:'Cash', bank:'Bank account', asset:'Asset', liability:'Liability'}[t] || t; }
@@ -1566,6 +1683,7 @@
       $$('.delete-tx-btn').forEach(b=>b.addEventListener('click', ()=>openConfirm('Delete transaction?', "This can't be undone.", 'transaction', b.dataset.id)));
     }
     renderRecurringBanner();
+    renderTxSummary();
   }
 
   /* ============ FILTER SHEET ============ */
@@ -2104,6 +2222,9 @@
   /* ============ THEME BUTTONS ============ */
   $('#themeToggleBtn').addEventListener('click', toggleTheme);
   $('#btnThemeMore').addEventListener('click', toggleTheme);
+  $('#btnThemeSide').addEventListener('click', toggleTheme);
+  $('#btnSideAddExpense').addEventListener('click', ()=>{ goToPage('money'); goToMoneySubtab('transactions'); openAddTxModal('expense'); });
+  $('#btnSideAddIncome').addEventListener('click', ()=>{ goToPage('money'); goToMoneySubtab('transactions'); openAddTxModal('income'); });
 
   function populateAllCategorySelects(){ /* selects are (re)built at open-time from allCategories(); nothing persistent to refresh here besides caches */ }
 
