@@ -1,0 +1,10 @@
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Netlify CLI local state (only relevant if you ever use `netlify dev`/`netlify link`)
+.netlify/
