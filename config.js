@@ -3,6 +3,6 @@
    then paste the project URL and anon (public) key here. The anon key is safe to publish;
    row-level security restricts every row to its owner. */
 window.TD_CONFIG = {
-  supabaseUrl: '',
-  supabaseAnonKey: '',
+  supabaseUrl: 'https://etnoyvcaopicijrktgvf.supabase.co',
+  supabaseAnonKey: 'sb_publishable_7ex6lO-jFiLrgQ8cxv79IA_DUQsjiZA',
 };
