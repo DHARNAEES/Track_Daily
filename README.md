@@ -6,7 +6,10 @@ vanilla JavaScript and Chart.js. No build step, no API keys, and no backend
 unless you opt in to cloud backup.
 
 It installs as an app on phones and desktops (PWA) and works offline after the
-first visit.
+first visit. Below 1024px it is a single-column mobile app with a bottom nav;
+at 1024px and above it switches to a desktop layout — a left sidebar, a
+dashboard on Overview (recent transactions + top spending) and a sticky
+summary rail beside the transaction list.
 
 ## Features
 
@@ -62,7 +65,7 @@ project to work, so test it with your own project before relying on it.
 ## Tech stack
 
 - Plain HTML + vanilla JavaScript (no framework, no bundler)
-- [Tailwind CSS](https://tailwindcss.com) Play CDN and [Chart.js](https://www.chartjs.org/) CDN
+- [Tailwind CSS](https://tailwindcss.com) Play CDN; [Chart.js](https://www.chartjs.org/) is bundled in `vendor/` (the previous CDN URL 404s, which left the charts blank)
 - `core.js` — pure logic (dates, CSV, balances, recurring, backup validation), unit tested
 - `sw.js` + `manifest.webmanifest` — offline support and installability
 - `localStorage` for persistence
@@ -73,6 +76,7 @@ project to work, so test it with your own project before relying on it.
 index.html            App UI and wiring
 core.js               Pure, tested logic (window.TD / module.exports)
 config.js             Optional settings (cloud backup)
+vendor/chart.umd.js   Chart.js 4.4.4 (bundled, MIT)
 sw.js                 Service worker (bump CACHE when shipping changes)
 manifest.webmanifest  PWA manifest
 icon.svg              App icon
