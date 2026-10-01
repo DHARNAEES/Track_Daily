@@ -677,7 +677,7 @@
       <p class="text-[11px] font-semibold mb-2" style="color:var(--text-faint); letter-spacing:.05em;">NOTES</p>
       <div class="rounded-2xl surface p-1 mb-4">
         <div class="px-3.5 py-3" style="border-bottom:1px solid var(--border);">
-          <input id="txDescription" type="text" required placeholder="What was this for?" class="bg-transparent outline-none text-[13.5px] w-full">
+          <input id="txDescription" type="text" placeholder="Description (optional)" class="bg-transparent outline-none text-[13.5px] w-full">
         </div>
         <div class="px-3.5 py-3" style="border-bottom:1px solid var(--border);">
           <input id="txTags" type="text" placeholder="Tags — comma, separated" class="bg-transparent outline-none text-[13.5px] w-full">
@@ -797,7 +797,7 @@
         <button type="button" data-rtype="income" class="rec-type-btn py-2.5 rounded-lg text-[13.5px] font-semibold">Income</button>
       </div>
       <div>
-        <label class="text-[12.5px] font-medium block mb-1.5" style="color:var(--text-dim);">Description</label>
+        <label class="text-[12.5px] font-medium block mb-1.5" style="color:var(--text-dim);">Description (optional)</label>
         <input id="recDescription" type="text" placeholder="e.g. Netflix subscription" class="input-field rounded-xl px-3.5 py-2.5 text-[14px] w-full">
       </div>
       <div class="grid grid-cols-2 gap-3">
@@ -949,6 +949,12 @@
     edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
     trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>',
     check:'<polyline points="20 6 9 17 4 12"/>',
+    cookie:'<path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5Z"/><circle cx="8.5" cy="11" r=".8"/><circle cx="12" cy="16" r=".8"/><circle cx="16" cy="13" r=".8"/><circle cx="8" cy="15.5" r=".8"/>',
+    bus:'<rect x="4" y="3" width="16" height="14" rx="2"/><path d="M4 11h16"/><path d="M7 17v3"/><path d="M17 17v3"/><circle cx="8" cy="14" r=".6"/><circle cx="16" cy="14" r=".6"/>',
+    train:'<rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14"/><path d="M8 21l2-4"/><path d="M16 21l-2-4"/><circle cx="9" cy="14" r=".6"/><circle cx="15" cy="14" r=".6"/>',
+    bike:'<circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="M5.5 17 9 8h4l3 9"/><path d="M13 8l1-3h3"/>',
+    milk:'<path d="M8 2h8l1 5v13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V7Z"/><path d="M7 7h10"/><path d="M7 13h10"/>',
+    handshake:'<path d="M2 11l5-4 4 2 4-2 5 4"/><path d="M7 13l3 3a1.5 1.5 0 0 0 2-2"/><path d="M12 14l2 2a1.5 1.5 0 0 0 2-2l-2-2"/><path d="M5 12v5l3 2"/><path d="M19 12v5l-3 2"/>',
     alert:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
   };
   function iconSvg(name, size, stroke){
@@ -980,21 +986,21 @@
     {id:'rent', label:'Housing & Rent', color:'#7C5FC4', icon:'home', kind:'expense'},
     {id:'cash_withdrawal', label:'Cash Withdrawal', color:'#3F9E5C', icon:'banknote', kind:'expense'},
     {id:'childcare', label:'Childcare', color:'#3FB0A0', icon:'baby', kind:'expense'},
+    {id:'snacks', label:'Snacks', color:'#D9822B', icon:'cookie', kind:'expense'},
+    {id:'bus', label:'Bus', color:'#E0A33F', icon:'bus', kind:'expense'},
+    {id:'metro', label:'Metro', color:'#4A7FD6', icon:'train', kind:'expense'},
+    {id:'rapido', label:'Rapido', color:'#E8B923', icon:'bike', kind:'expense'},
+    {id:'milk', label:'Milk', color:'#5BA8C9', icon:'milk', kind:'expense'},
+    {id:'lend', label:'Lend', color:'#7A8F5C', icon:'handshake', kind:'expense'},
     {id:'other_expense', label:'Other Expense', color:'#8A8375', icon:'ellipsis', kind:'expense'},
     {id:'salary', label:'Salary', color:'#2E9E63', icon:'banknote', kind:'income'},
     {id:'freelance', label:'Freelance', color:'#5CAE5B', icon:'briefcase', kind:'income'},
     {id:'other_income', label:'Other Income', color:'#7CB88F', icon:'gift', kind:'income'},
   ];
-  const DEFAULT_CUSTOM = [
-    {id:'bus', label:'Bus', color:'#9C9689', icon:'tag', kind:'expense', custom:true},
-    {id:'metro', label:'Metro', color:'#9C9689', icon:'tag', kind:'expense', custom:true},
-    {id:'rapido', label:'Rapido', color:'#9C9689', icon:'tag', kind:'expense', custom:true},
-    {id:'milk', label:'Milk', color:'#9C9689', icon:'tag', kind:'expense', custom:true},
-    {id:'lend', label:'Lend', color:'#9C9689', icon:'tag', kind:'expense', custom:true},
-  ];
+  const DEFAULT_CUSTOM = [];
 
   let customCategories = [];
-  function allCategories(){ return BASE_CATS.concat(customCategories); }
+  function allCategories(){ return BASE_CATS.concat(customCategories.filter(c => !BASE_CATS.some(b => b.id === c.id))); }
   function catMeta(id){ return allCategories().find(c => c.id === id) || { id, label:'Deleted category', color:'#8A8375', icon:'tag', kind:'expense' }; }
   function categoriesForKind(kind){ return allCategories().filter(c => c.kind === kind || c.kind === 'both'); }
 
@@ -1104,6 +1110,10 @@
     r = loadValue(CUSTOM_CAT_KEY, () => DEFAULT_CUSTOM.slice(), isArr); customCategories = r.value; if (r.fresh) saveCustomCategories();
     r = loadValue(META_KEY, () => ({}), isObj); meta = r.value;
     if (!meta.since){ meta.since = new Date().toISOString(); saveMeta(); }
+    if (!meta.clearedThru20260930){
+      state.transactions = state.transactions.filter(t => t.date > '2026-09-30'); saveTx();
+      meta.clearedThru20260930 = true; saveMeta();
+    }
   }
   function saveTx(){ persist(TX_KEY, state.transactions); }
   function saveAccounts(){ persist(ACC_KEY, state.accounts); }
@@ -1112,6 +1122,7 @@
   function saveCustomCategories(){ persist(CUSTOM_CAT_KEY, customCategories); }
 
   function seedTransactions(){
+    return [];
     const d = off => { const dt=new Date(); dt.setDate(dt.getDate()-off); return dt.toISOString().slice(0,10); };
     return [
       { id: uid(), description:'Monthly salary', amount:65000, type:'income', category:'salary', date:d(2), notes:'', tags:[] },
@@ -1302,7 +1313,7 @@
       const meta = catMeta(t.category), inc = t.type==='income';
       return '<div class="flex items-center gap-3 py-3" style="border-bottom:1px solid var(--border);">' +
         '<span class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style="background:'+meta.color+';">'+iconSvg(meta.icon,16,'#fff')+'</span>' +
-        '<div class="min-w-0 flex-1"><p class="text-[13.5px] font-medium truncate">'+escapeHtml(t.description)+'</p><p class="text-[11.5px]" style="color:var(--text-faint);">'+escapeHtml(meta.label)+' · '+fmtDate(t.date)+'</p></div>' +
+        '<div class="min-w-0 flex-1"><p class="text-[13.5px] font-medium truncate">'+escapeHtml(t.description||meta.label)+'</p><p class="text-[11.5px]" style="color:var(--text-faint);">'+escapeHtml(meta.label)+' · '+fmtDate(t.date)+'</p></div>' +
         '<span class="font-display font-semibold text-[13.5px] tabular" style="color:'+(inc?'var(--pos)':'var(--neg)')+';">'+(inc?'+':'−')+fmtMoney(t.amount)+'</span></div>';
     }).join('') : '<p class="text-[13px] py-6 text-center" style="color:var(--text-faint);">No transactions yet.</p>';
     $('#topCategoriesList').innerHTML = categoryBarsHtml(TD.spentByCategory(state.transactions, currentMonthKey()), 5);
@@ -1342,9 +1353,11 @@
         '<p class="text-[11.5px]" style="color:var(--text-faint);">'+accountTypeLabel(a.type)+(!isLiab && bal!==(Number(a.balance)||0) ? ' · opening '+fmtMoney(a.balance) : '')+'</p></div>' +
         '<div class="flex items-center gap-2">' +
         '<span class="font-display font-semibold text-[14px] tabular" style="color:'+(isLiab?'var(--neg)':'var(--text)')+';">'+(isLiab?'-'+fmtMoney(Math.abs(bal)):fmtMoney(bal))+'</span>' +
+        '<button aria-label="Edit account" class="edit-account-btn p-1.5 rounded-lg btn-ghost" data-id="'+a.id+'">'+iconSvg('edit',13)+'</button>' +
         '<button aria-label="Delete account" class="delete-account-btn p-1.5 rounded-lg btn-ghost" data-id="'+a.id+'">'+iconSvg('trash',13)+'</button>' +
         '</div></div>';
     }).join('');
+    $$('.edit-account-btn').forEach(b=>b.addEventListener('click', ()=>openAccountModal(b.dataset.id)));
     $$('.delete-account-btn').forEach(b=>b.addEventListener('click', ()=>{
       openConfirm('Delete account?', 'This will not delete related transactions.', 'account', b.dataset.id);
     }));
@@ -1364,8 +1377,12 @@
 
   $('#btnAddAccountWealth').addEventListener('click', ()=>openAccountModal());
   $('#btnAddAccountMoney').addEventListener('click', ()=>openAccountModal());
-  function openAccountModal(){
-    $('#accName').value=''; $('#accType').value='cash'; $('#accBalance').value='';
+  let editingAccountId = null;
+  function openAccountModal(id){
+    const a = typeof id==='string' ? state.accounts.find(x=>x.id===id) : null;
+    editingAccountId = a ? a.id : null;
+    $('#accountModal h3').textContent = a ? 'Edit account' : 'Add account';
+    $('#accName').value = a ? a.name : ''; $('#accType').value = a ? a.type : 'cash'; $('#accBalance').value = a ? a.balance : '';
     showModal('#accountModal');
     setTimeout(()=>$('#accName').focus(),50);
   }
@@ -1377,10 +1394,12 @@
     const type = $('#accType').value;
     const balance = parseFloat($('#accBalance').value) || 0;
     if (!name){ toast('Please name the account','error'); return; }
-    state.accounts.push({ id: uid(), name, type, balance });
+    const existing = editingAccountId && state.accounts.find(x=>x.id===editingAccountId);
+    if (existing) Object.assign(existing, { name, type, balance });
+    else state.accounts.push({ id: uid(), name, type, balance });
     saveAccounts();
-    toast('Account added','success');
-    const restore = flashSaved($('#btnSaveAccount'), 'Added');
+    toast(existing ? 'Account updated' : 'Account added','success');
+    const restore = flashSaved($('#btnSaveAccount'), existing ? 'Saved' : 'Added');
     setTimeout(()=>{
       restore();
       hideModal('#accountModal');
@@ -1559,7 +1578,6 @@
     return { amount, description, date, category, accountId, tags, notes };
   }
   function validateTxForm(f){
-    if (!f.description){ toast('Please add a description','error'); return false; }
     if (!f.amount || f.amount<=0){ toast('Enter a valid amount','error'); return false; }
     if (!f.date){ toast('Pick a date','error'); return false; }
     if (!f.category){ toast('Choose a category','error'); return false; }
@@ -1666,7 +1684,7 @@
         return '<div class="tx-row row-enter flex items-center gap-3 px-4 py-3.5" style="border-bottom:1px solid var(--border); animation-delay:'+Math.min(i*30,300)+'ms;" data-id="'+t.id+'">' +
           '<span class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style="background:'+meta.color+';">'+iconSvg(meta.icon,16,'#fff')+'</span>' +
           '<div class="min-w-0 flex-1">' +
-            '<p class="text-[13.5px] font-medium truncate">'+escapeHtml(t.description)+'</p>' +
+            '<p class="text-[13.5px] font-medium truncate">'+escapeHtml(t.description||catMeta(t.category).label)+'</p>' +
             '<p class="text-[11.5px]" style="color:var(--text-faint);">'+escapeHtml(meta.label)+' · '+fmtDate(t.date)+'</p>' +
             tagsHtml +
           '</div>' +
@@ -1739,19 +1757,25 @@
       const isIncome = r.type==='income';
       return '<div class="rounded-xl p-3.5 card list-row row-enter flex items-center gap-3" data-id="'+r.id+'" style="animation-delay:'+Math.min(i*40,320)+'ms;">' +
         '<span class="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style="background:'+meta.color+';">'+iconSvg(meta.icon,15,'#fff')+'</span>' +
-        '<div class="min-w-0 flex-1"><p class="text-[13.5px] font-medium truncate">'+escapeHtml(r.description)+'</p>' +
+        '<div class="min-w-0 flex-1"><p class="text-[13.5px] font-medium truncate">'+escapeHtml(r.description||meta.label)+'</p>' +
         '<p class="text-[11.5px]" style="color:var(--text-faint);">Monthly · Next '+fmtDate(r.nextDate)+'</p></div>' +
         '<span class="font-display font-semibold text-[13.5px] tabular" style="color:'+(isIncome?'var(--pos)':'var(--neg)')+';">'+(isIncome?'+':'−')+fmtMoney(r.amount)+'</span>' +
+        '<button aria-label="Edit template" class="edit-recurring-btn p-1.5 rounded-lg btn-ghost" data-id="'+r.id+'">'+iconSvg('edit',13)+'</button>' +
         '<button aria-label="Delete template" class="delete-recurring-btn p-1.5 rounded-lg btn-ghost" data-id="'+r.id+'">'+iconSvg('trash',13)+'</button>' +
         '</div>';
     }).join('');
+    $$('.edit-recurring-btn').forEach(b=>b.addEventListener('click', ()=>openRecurringModal(b.dataset.id)));
     $$('.delete-recurring-btn').forEach(b=>b.addEventListener('click', ()=>openConfirm('Delete template?', "This won't remove past generated transactions.", 'recurring', b.dataset.id)));
   }
-  $('#btnAddRecurring').addEventListener('click', openRecurringModal);
-  function openRecurringModal(){
-    $('#recDescription').value=''; $('#recAmount').value=''; $('#recDate').value=todayISO();
-    setRecType('expense');
-    populateRecCategorySelect('expense');
+  $('#btnAddRecurring').addEventListener('click', ()=>openRecurringModal());
+  let editingRecurringId = null;
+  function openRecurringModal(id){
+    const r = typeof id==='string' ? state.recurring.find(x=>x.id===id) : null;
+    editingRecurringId = r ? r.id : null;
+    $('#recurringModal h3').textContent = r ? 'Edit recurring template' : 'Add recurring template';
+    $('#recDescription').value = r ? r.description : ''; $('#recAmount').value = r ? r.amount : ''; $('#recDate').value = r ? r.nextDate : todayISO();
+    setRecType(r ? r.type : 'expense');
+    if (r) $('#recCategory').value = r.category;
     showModal('#recurringModal');
   }
   function setRecType(type){
@@ -1776,11 +1800,13 @@
     const date = $('#recDate').value;
     const category = $('#recCategory').value;
     const type = currentRecType();
-    if (!description || !amount || amount<=0 || !date || !category){ toast('Fill in all fields','error'); return; }
-    state.recurring.push({ id:uid(), description, amount, type, category, nextDate:date, frequency:'monthly' });
+    if (!amount || amount<=0 || !date || !category){ toast('Fill in all fields','error'); return; }
+    const existing = editingRecurringId && state.recurring.find(x=>x.id===editingRecurringId);
+    if (existing) Object.assign(existing, { description, amount, type, category, nextDate:date });
+    else state.recurring.push({ id:uid(), description, amount, type, category, nextDate:date, frequency:'monthly' });
     saveRecurring();
-    toast('Recurring template added','success');
-    const restore = flashSaved($('#btnSaveRecurring'), 'Added');
+    toast(existing ? 'Template updated' : 'Recurring template added','success');
+    const restore = flashSaved($('#btnSaveRecurring'), existing ? 'Saved' : 'Added');
     setTimeout(()=>{
       restore();
       hideModal('#recurringModal');
