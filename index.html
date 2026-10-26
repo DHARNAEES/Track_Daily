@@ -884,6 +884,7 @@
       <p class="text-[12.5px]" id="cloudStatus" style="color:var(--text-dim);">Not signed in.</p>
       <p class="text-[12px]" style="color:var(--text-faint);">Your data saves to your account automatically and loads on every device you sign in on.</p>
       <div class="flex flex-col gap-2.5">
+        <button type="button" id="btnCloudSignIn" class="btn-primary rounded-xl px-4 py-2.5 text-[13.5px] hidden">Sign in to sync</button>
         <button type="button" id="btnCloudSync" class="btn-primary rounded-xl px-4 py-2.5 text-[13.5px]">Sync now</button>
         <button type="button" id="btnCloudSignOut" class="text-[13px] font-semibold py-1.5" style="color:var(--text-dim);">Sign out</button>
       </div>
@@ -907,6 +908,7 @@
       <p id="authMsg" class="text-[12.5px] min-h-[18px]" role="alert"></p>
       <button type="submit" id="btnAuthSignIn" class="btn-primary rounded-xl px-4 py-2.5 text-[13.5px]">Sign in</button>
       <button type="button" id="btnAuthSignUp" class="btn-ghost rounded-xl px-4 py-2.5 text-[13.5px] font-semibold">Create account</button>
+      <button type="button" id="btnAuthSkip" class="text-[13px] font-semibold py-1.5" style="color:var(--text-dim);">Continue without syncing</button>
     </form>
   </div>
 </div>
@@ -1123,10 +1125,6 @@
     r = loadValue(CUSTOM_CAT_KEY, () => DEFAULT_CUSTOM.slice(), isArr); customCategories = r.value; if (r.fresh) saveCustomCategories();
     r = loadValue(META_KEY, () => ({}), isObj); meta = r.value;
     if (!meta.since){ meta.since = new Date().toISOString(); saveMeta(); }
-    if (!meta.clearedThru20260930){
-      state.transactions = state.transactions.filter(t => t.date > '2026-09-30'); saveTx();
-      meta.clearedThru20260930 = true; saveMeta();
-    }
     metaReady = true;
   }
   function saveTx(){ persist(TX_KEY, state.transactions); }
@@ -2107,7 +2105,9 @@
     if (cloudSession) syncTimer = setTimeout(syncNow, delay==null ? 1500 : delay);
   }
   function renderCloudStatus(){
-    $('#cloudStatus').textContent = cloudSession ? 'Signed in as '+cloudSession.user.email+(syncStatus ? ' · '+syncStatus : '') : 'Not signed in.';
+    $('#cloudStatus').textContent = cloudSession ? 'Signed in as '+cloudSession.user.email+(syncStatus ? ' · '+syncStatus : '') : (meta.localOnly ? 'Not signed in — data stays on this device.' : 'Not signed in.');
+    $('#btnCloudSignIn').classList.toggle('hidden', !!cloudSession);
+    $('#btnCloudSync').classList.toggle('hidden', !cloudSession);
   }
   function setSyncStatus(t){ syncStatus = t; renderCloudStatus(); }
 
@@ -2201,6 +2201,7 @@
     finally { btns.forEach(b=>b.disabled = false); }
   }
   async function startAuth(){
+    if (meta.localOnly){ renderCloudStatus(); return; } // chose to stay offline: don't load the cloud library or show the gate
     showGate(true); setAuthMsg('Checking sign-in…', true);
     try {
       const sb = await cloud();
@@ -2217,7 +2218,7 @@
     }
   }
   async function resumeSync(){
-    if (!cloudEnabled || !metaReady) return;
+    if (!cloudEnabled || !metaReady || meta.localOnly) return;
     if (cloudSession){ syncNow(); return; }
     if ($('#authGate').classList.contains('hidden')){
       try { const { data:{ session } } = await (await cloud()).auth.getSession(); if (session) enterApp(session); } catch(e){}
@@ -2228,6 +2229,12 @@
 
   $('#authForm').addEventListener('submit', e=>{ e.preventDefault(); cloudAuth('in'); });
   $('#btnAuthSignUp').addEventListener('click', ()=>cloudAuth('up'));
+  $('#btnAuthSkip').addEventListener('click', ()=>{
+    meta.localOnly = true; saveMeta(); setAuthMsg(''); showGate(false); renderCloudStatus();
+  });
+  $('#btnCloudSignIn').addEventListener('click', ()=>{
+    meta.localOnly = false; saveMeta(); hideModal('#cloudModal'); startAuth();
+  });
   $('#btnCloud').addEventListener('click', ()=>{ renderCloudStatus(); showModal('#cloudModal'); });
   $('#closeCloudModal').addEventListener('click', ()=>hideModal('#cloudModal'));
   $('#cloudModalBackdrop').addEventListener('click', ()=>hideModal('#cloudModal'));

@@ -152,3 +152,33 @@ test('validateBackup accepts a well-formed backup and rejects malformed ones', (
   assert.equal(TD.validateBackup({ ...good, transactions: [{ ...good.transactions[0], amount: -1 }] }), false);
   assert.equal(TD.validateBackup({ ...good, transactions: [{ ...good.transactions[0], type: 'transfer' }] }), false);
 });
+
+test('validateBackup rejects string amounts, which would concatenate in totals', () => {
+  const tx = { id: 'a', description: 'x', type: 'expense', amount: '5', date: '2026-10-01' };
+  assert.equal(TD.validateBackup({ app: 'track-daily', transactions: [tx], accounts: [], recurring: [], budgets: {}, customCategories: [] }), false);
+});
+
+test('validateBackup rejects ids, colors and budget keys that could break out of HTML attributes', () => {
+  const base = { app: 'track-daily', transactions: [], accounts: [], recurring: [], budgets: {}, customCategories: [] };
+  const evil = 'x"><img src=x onerror="a()">';
+  assert.equal(TD.validateBackup({ ...base, accounts: [{ id: evil, name: 'Evil' }] }), false);
+  assert.equal(TD.validateBackup({ ...base, transactions: [{ id: 'a', description: 'x', type: 'expense', amount: 5, date: '2026-10-01', category: evil }] }), false);
+  assert.equal(TD.validateBackup({ ...base, customCategories: [{ id: 'c', label: 'Bus', color: 'red;" onmouseover="a()' }] }), false);
+  assert.equal(TD.validateBackup({ ...base, budgets: { '2026-10': { [evil]: 100 } } }), false);
+  assert.equal(TD.validateBackup({ ...base, budgets: { '2026-10': { food: '100' } } }), false);
+});
+
+test('validateBackup rejects tags that are not a list of strings', () => {
+  const tx = { id: 'a', description: 'x', type: 'expense', amount: 5, date: '2026-10-01', tags: 'oops' };
+  assert.equal(TD.validateBackup({ app: 'track-daily', transactions: [tx], accounts: [], recurring: [], budgets: {}, customCategories: [] }), false);
+});
+
+test('validateBackup accepts a backup the app itself produces', () => {
+  const ok = { app: 'track-daily', version: 1,
+    transactions: [{ id: 'mh3k2a1b9z', type: 'expense', amount: 12.5, description: '', category: 'transfers_remittance', date: '2026-10-01', accountId: null, tags: ['a'], notes: '' }],
+    accounts: [{ id: 'mh3k2a1b9y', name: 'Cash', type: 'cash', balance: 0 }],
+    recurring: [{ id: 'mh3k2a1b9x', description: 'Rent', amount: 100, type: 'expense', category: 'rent', nextDate: '2026-11-01', frequency: 'monthly' }],
+    budgets: { '2026-10': { food: 500 }, '2026-11': {} },
+    customCategories: [{ id: 'mh3k2a1b9w', label: 'Gym', color: '#9C9689', icon: 'tag', kind: 'expense', custom: true }] };
+  assert.equal(TD.validateBackup(ok), true);
+});

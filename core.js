@@ -165,16 +165,30 @@
     return Math.floor(((now || Date.now()) - t) / 86400000);
   }
 
-  /** Structural check for a Track Daily JSON backup before it is allowed to replace local data. */
+  /**
+   * Structural check for a Track Daily JSON backup before it is allowed to replace local data.
+   * The app writes ids, category ids, colors and budget keys into HTML attributes, so those are
+   * restricted to safe characters here; amounts must be real numbers (a string would concatenate in totals).
+   */
   function validateBackup(b) {
     const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
+    const isId = v => typeof v === 'string' && /^[\w.-]{1,64}$/.test(v);
+    const isNum = v => typeof v === 'number' && isFinite(v);
+    const opt = (v, ok) => v === undefined || v === null || ok(v);
+    const isType = v => v === 'income' || v === 'expense';
     if (!isObj(b) || b.app !== 'track-daily') return false;
     if (!Array.isArray(b.transactions) || !Array.isArray(b.accounts) || !Array.isArray(b.recurring) || !Array.isArray(b.customCategories) || !isObj(b.budgets)) return false;
-    return b.transactions.every(t => isObj(t) && typeof t.id === 'string' && typeof t.description === 'string' &&
-      (t.type === 'income' || t.type === 'expense') && Number(t.amount) > 0 && typeof t.date === 'string' && isValidISODate(t.date)) &&
-      b.accounts.every(a => isObj(a) && typeof a.id === 'string' && typeof a.name === 'string') &&
-      b.recurring.every(r => isObj(r) && typeof r.id === 'string' && typeof r.nextDate === 'string' && isValidISODate(r.nextDate) && Number(r.amount) > 0) &&
-      b.customCategories.every(k => isObj(k) && typeof k.id === 'string' && typeof k.label === 'string');
+    return b.transactions.every(t => isObj(t) && isId(t.id) && typeof t.description === 'string' &&
+      isType(t.type) && isNum(t.amount) && t.amount > 0 && typeof t.date === 'string' && isValidISODate(t.date) &&
+      opt(t.category, isId) && opt(t.accountId, isId) && opt(t.notes, v => typeof v === 'string') &&
+      opt(t.tags, v => Array.isArray(v) && v.every(x => typeof x === 'string'))) &&
+      b.accounts.every(a => isObj(a) && isId(a.id) && typeof a.name === 'string' &&
+        opt(a.type, v => ['cash', 'bank', 'asset', 'liability'].includes(v)) && opt(a.balance, isNum)) &&
+      b.recurring.every(r => isObj(r) && isId(r.id) && typeof r.nextDate === 'string' && isValidISODate(r.nextDate) &&
+        isNum(r.amount) && r.amount > 0 && opt(r.type, isType) && opt(r.category, isId) && opt(r.description, v => typeof v === 'string')) &&
+      b.customCategories.every(k => isObj(k) && isId(k.id) && typeof k.label === 'string' &&
+        opt(k.color, v => /^#[0-9a-f]{3,8}$/i.test(v)) && opt(k.icon, v => /^\w{1,32}$/.test(v)) && opt(k.kind, v => ['expense', 'income', 'both'].includes(v))) &&
+      Object.keys(b.budgets).every(ym => isObj(b.budgets[ym]) && Object.keys(b.budgets[ym]).every(id => isId(id) && isNum(b.budgets[ym][id])));
   }
 
   const api = {
