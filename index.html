@@ -20,10 +20,7 @@
 </script>
 
 <script src="auth.js"></script>
-<script>
-  // Not signed in: go to the separate login page before anything else loads.
-  if (!TD_AUTH.currentUser()) location.replace("login.html");
-</script>
+<script src="touch.js" defer></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -267,11 +264,6 @@
     </button>
   </div>
   <div class="mt-auto">
-    <p class="px-4 pb-1 text-[12px] truncate" style="color:var(--text-faint);" id="sideUserName"></p>
-    <button id="btnSignOutSide" class="side-nav-btn">
-      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      <span>Sign out</span>
-    </button>
     <button id="btnThemeSide" class="side-nav-btn">
       <svg id="themeIconSide" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
       <span id="themeLabelSide">Dark mode</span>
@@ -573,10 +565,6 @@
       <button id="btnCloud" class="hidden w-full flex items-center gap-3 px-4 py-3.5 text-[14px] font-medium" style="border-bottom:1px solid var(--border);">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
         Account &amp; sync
-      </button>
-      <button id="btnSignOutMore" class="w-full flex items-center gap-3 px-4 py-3.5 text-[14px] font-medium" style="border-bottom:1px solid var(--border);">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Sign out (<span id="moreUserName"></span>)
       </button>
       <button id="btnResetMore" class="w-full flex items-center gap-3 px-4 py-3.5 text-[14px] font-medium" style="color:var(--neg);">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
@@ -936,8 +924,8 @@
   'use strict';
 
   /* ============ SIGNED-IN USER ============ */
-  const AUTH_USER = TD_AUTH.currentUser();
-  if (!AUTH_USER) return; // the head script is already redirecting to login.html
+  // No sign-in: the app opens straight away. An account from an earlier version keeps its data; otherwise a local profile is used.
+  const AUTH_USER = TD_AUTH.currentUser() || TD_AUTH.getUsers()[0] || TD_AUTH.guestUser();
 
   /* ============ STORAGE KEYS ============ */
   // Key names keep the app's old internal name so existing data survives the rename. Everything except the
@@ -1298,7 +1286,7 @@
   function renderGreeting(){
     const now = new Date();
     const h = now.getHours();
-    $('#greetingText').textContent = (h<12?'Good morning':h<18?'Good afternoon':'Good evening') + ', ' + AUTH_USER.name;
+    $('#greetingText').textContent = (h<12?'Good morning':h<18?'Good afternoon':'Good evening') + (AUTH_USER.name ? ', ' + AUTH_USER.name : '');
     $('#greetingDate').textContent = now.toLocaleDateString('en-IN',{weekday:'long', day:'numeric', month:'long'});
   }
   function setChip(sel, chip){
@@ -2381,14 +2369,6 @@
   }
   $('#confirmCancel').addEventListener('click', ()=>{ pendingRestore = null; hideModal('#confirmModal'); });
   $('#confirmModalBackdrop').addEventListener('click', ()=>{ pendingRestore = null; hideModal('#confirmModal'); });
-  /* ============ SIGN OUT ============ */
-  $('#sideUserName').textContent = AUTH_USER.name;
-  $('#moreUserName').textContent = AUTH_USER.name;
-  function signOutNow(){ TD_AUTH.signOut(); location.replace('login.html'); }
-  $('#btnSignOutSide').addEventListener('click', signOutNow);
-  $('#btnSignOutMore').addEventListener('click', signOutNow);
-  // Another tab signed out or switched account: reload so this tab never keeps writing as the wrong user.
-  window.addEventListener('storage', e=>{ if (e.key===TD_AUTH.SESSION_KEY) location.reload(); });
 
   $('#btnResetMore').addEventListener('click', ()=>openConfirm('Reset all data?', 'This deletes every transaction, account, and template permanently.', 'reset-all', null));
 

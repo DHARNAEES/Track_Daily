@@ -1,6 +1,6 @@
 /* Track Daily service worker: makes the app load offline. Bump CACHE when shipping changes. */
-const CACHE = 'track-daily-v13';
-const SHELL = ['login.html', 'auth.js', './', 'index.html', 'core.js', 'config.js', 'manifest.webmanifest', 'icon.svg', 'vendor/chart.umd.js'];
+const CACHE = 'track-daily-v19';
+const SHELL = ['login.html', 'auth.js', 'touch.js', './', 'index.html', 'core.js', 'config.js', 'manifest.webmanifest', 'icon.svg', 'vendor/chart.umd.js'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

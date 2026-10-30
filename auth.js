@@ -19,11 +19,16 @@
   function normalizeUsername(s) { return String(s == null ? '' : s).trim().toLowerCase(); }
 
   /** Returns an error message, or '' when the sign-up details are acceptable. */
-  function validateSignup(username, password, existingUsers) {
+  function validateSignup(username, password, existingUsers, email) {
     const u = normalizeUsername(username);
     if (!/^[a-z0-9._-]{3,24}$/.test(u)) return 'Username must be 3–24 letters, numbers, dots, dashes or underscores';
     if (String(password).length < 6) return 'Password must be at least 6 characters';
     if ((existingUsers || []).some(x => x.username === u)) return 'That username is already taken on this device';
+    if (email !== undefined) {
+      const e = normalizeUsername(email);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return 'Enter a valid email address';
+      if ((existingUsers || []).some(x => x.email === e)) return 'That email is already used on this device';
+    }
     return '';
   }
 
@@ -84,13 +89,14 @@
 
   /* ---------------- account actions ---------------- */
 
-  async function signUp(username, password, displayName) {
+  async function signUp(username, password, displayName, email) {
     const users = getUsers();
-    const err = validateSignup(username, password, users);
+    const err = validateSignup(username, password, users, email);
     if (err) throw new Error(err);
     const salt = toHex(root.crypto.getRandomValues(new Uint8Array(16)));
     const user = {
       id: newId(), username: normalizeUsername(username),
+      email: email === undefined ? '' : normalizeUsername(email),
       name: String(displayName || '').trim().slice(0, 40) || normalizeUsername(username),
       salt, iterations: PBKDF2_ITERATIONS, hash: await hashPassword(password, salt, PBKDF2_ITERATIONS),
       created: new Date().toISOString(),
@@ -104,7 +110,9 @@
   }
 
   async function signIn(username, password) {
-    const u = getUsers().find(x => x.username === normalizeUsername(username));
+    // The sign-in field accepts either the username or the email the account was created with.
+    const id = normalizeUsername(username);
+    const u = getUsers().find(x => x.username === id || (x.email && x.email === id));
     // Hash even for unknown names so timing does not reveal which usernames exist.
     const salt = u ? u.salt : '00'.repeat(16);
     const hash = await hashPassword(password, salt, u ? u.iterations : PBKDF2_ITERATIONS);
@@ -113,12 +121,18 @@
     return { id: u.id, username: u.username, name: u.name };
   }
 
+  /** Local profile used when nobody has signed in (the app has no sign-in screen). Adopts pre-account data once. */
+  function guestUser() {
+    adoptLegacyData('guest');
+    return { id: 'guest', username: 'guest', name: '' };
+  }
+
   function signOut() { try { root.localStorage.removeItem(SESSION_KEY); } catch (e) {} }
 
   const api = {
     SESSION_KEY, USERS_KEY, LEGACY_KEYS,
     normalizeUsername, validateSignup, userKey,
-    getUsers, currentUser, signUp, signIn, signOut, hasUnclaimedLegacyData,
+    getUsers, currentUser, guestUser, signUp, signIn, signOut, hasUnclaimedLegacyData,
   };
   root.TD_AUTH = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
